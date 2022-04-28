@@ -24,8 +24,6 @@ public class City {
     public String toString() {
         return "City{" +
                 "cityAndState = '" + cityAndState + '\'' +
-                ", latitude = " + latitude +
-                ", longitude = " + longitude +
-                '}';
+                ", latitude = " + latitude + ", longitude = " + longitude + '}' + "\n";
     }
 }
