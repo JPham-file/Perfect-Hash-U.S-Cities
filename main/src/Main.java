@@ -7,18 +7,10 @@ public class Main {
 
         Hash24 h1 = new Hash24();
         int test = h1.hash("Abington, MA");
-        CityTable US_Cities = new CityTable("US_Cities_LL.txt", 15937);
+        CityTable US_Cities = new CityTable("US_Cities_LL.txt", 16000);
 
-        US_Cities.dump();
-
-//        Collections.sort(hashIntegerArray);
-//        for (Integer x : hashIntegerArray) {
-//            System.out.println(x);
-//        }
-
-//        ArrayList<City> a = US_Cities.getArray();
-//        for (City city : a) {
-//            System.out.println(city);
-//        }
+        SecondTable[] testing = CityTable.getPrimaryTable();
+        System.out.println("done");
+        System.out.println(US_Cities.find("Austin, TX"));
     }
 }

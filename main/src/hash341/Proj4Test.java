@@ -5,13 +5,12 @@
 
 */
 
-/*
-package driver ;
+package hash341;
 
 import java.util.* ;
 import java.io.* ;
 import hash341.City ;
-import hash341.hash341.CityTable ;
+import hash341.CityTable;
 
 public class Proj4Test {
 
@@ -29,7 +28,8 @@ public class Proj4Test {
         hash341.CityTable US_Cities ;
         String cName ;
 
-        US_Cities = hash341.CityTable.readFromFile("US_Cities_LL.ser") ;
+//        US_Cities = hash341.CityTable.readFromFile("US_Cities_LL.ser") ;
+        US_Cities = new CityTable("US_Cities_LL.txt", 16000);
 
         cName = "Arbutus, MD" ;
         System.out.println("\nSearching for " + cName) ;
@@ -97,5 +97,3 @@ public class Proj4Test {
 
     }
 }
-
- */

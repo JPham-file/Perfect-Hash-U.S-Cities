@@ -1,39 +1,57 @@
 package hash341;
+
 import java.util.*;
 import java.io.*;
 
 
 /**
- *
  * construct hash table using perfect hash
  * tsize = primary hash table size
  */
-public class CityTable {
-    private String fname;
+public class CityTable implements Serializable {
+    private static  SecondTable[] primaryTable = new SecondTable[16000];
+    private static  int[] secondTableCollisions = new int[16000]; // keep track of collision in second table
     private static int tsize;
     private static int numberOfCities;
+    private String fname;
+    static Hash24 h1 = new Hash24();
+    static int primaryIndex;
 
-    private static SecondTable[] primaryTable = new SecondTable[16000];
 
-
-    private static int[] numbersOfCollisions = new int[16000];  // keep track of the number of collision at index
-
+    public static SecondTable[] getPrimaryTable() {
+        return primaryTable;
+    }
 
     // constructor
     public CityTable(String fname, int tsize) {
         this.fname = fname;
         this.tsize = tsize;
+
+        // create all City object and store City object into Object SecondTable which is stored in array of primaryTable
         readFromFile(this.fname);
 
         // now hash for second table
         for (int i = 0; i < 16000; ++i) {
-            if (primaryTable[i] == null) {continue;}
+            if (primaryTable[i] == null) {
+                continue;
+            }
             primaryTable[i].hashSecondTable();
         }
+        writeToFile(this.fname);
 
-        System.out.println("DONE");
+        // storing second hash number of hashes required
+        for (int i = 0; i < 16000; ++i) {
+            if (primaryTable[i] == null) {
+                continue;
+            }
 
-
+            for (int j = 1; j < 15; ++j) {
+                if (primaryTable[i].getCollisionCounter() == j) {
+                    secondTableCollisions[j]++;
+                }
+            }
+        }
+        dump();
     }
 
     public CityTable() {
@@ -41,84 +59,11 @@ public class CityTable {
         this.tsize = 16000;
     }
 
-    // getters
-    public String getFname() {return fname;}
-    public int getTsize() {return tsize;}
-
-    // setters
-    public void setFname(String fname) {this.fname = fname;}
-    public void setTsize(int tsize) {this.tsize = tsize;}
-
-
-
-    /**
-     * the dump thing
-     */
-    public void dump() {
-        // checking collision
-        int[] numsCollsions = new int[10];
-
-        int max = 0;
-        int maxIndex = 0;
-        for (int i = 0; i < 16000; ++i) {
-
-            // no cities
-            if (primaryTable[i] == null) {
-                numsCollsions[0]++;
-                continue;
-            }
-
-            // max
-            int numbersOfCollision = primaryTable[i].getNormalCityStorage().size();
-            if (primaryTable[i].getNormalCityStorage().size() > max) {
-                max = primaryTable[i].getNormalCityStorage().size();
-                maxIndex = i;
-            }
-
-            // collision counter
-            if (numbersOfCollision == 1){numsCollsions[1]++;}
-            else if (numbersOfCollision == 2){numsCollsions[2]++;}
-            else if (numbersOfCollision == 3){numsCollsions[3]++;}
-            else if (numbersOfCollision == 4){numsCollsions[4]++;}
-            else if (numbersOfCollision == 5){numsCollsions[5]++;}
-            else if (numbersOfCollision == 6){numsCollsions[6]++;}
-            else if (numbersOfCollision == 7){numsCollsions[7]++;}
-            else if (numbersOfCollision == 8){numsCollsions[8]++;}
-            else if (numbersOfCollision == 9){numsCollsions[9]++;}
-
-        }
-
-        System.out.println("--------------DUMP FILE--------------");
-        System.out.println("table size: " + tsize);
-        System.out.println("Number of cities: " + numberOfCities);
-        System.out.println("Max numbers of collision: " + max);
-
-        System.out.println("Zero Collisions: " + numsCollsions[0]);
-        System.out.println("One Collisions: " + numsCollsions[1]);
-        System.out.println("Two Collisions: " + numsCollsions[2]);
-        System.out.println("Three Collisions: " + numsCollsions[3]);
-        System.out.println("Four Collisions: " + numsCollsions[4]);
-        System.out.println("Five Collisions: " + numsCollsions[5]);
-        System.out.println("Six Collisions: " + numsCollsions[6]);
-        System.out.println("Seven Collisions: " + numsCollsions[7]);
-        System.out.println("Eight Collisions: " + numsCollsions[8]);
-        System.out.println("Nine Collisions: " + numsCollsions[9]);
-
-        System.out.println("--------------Cities in hash with most collisions--------------");
-        System.out.println(primaryTable[maxIndex].getNormalCityStorage());
-    }
-
-    /**
-     * number of city read in
-     * @return
-     */
-    public int numCities() { return numberOfCities;}
-
-
     /**
      * read in file
      * parse the city and state first
      * than parse coords for longitude and latitude
+     *
      * @param fileName
      */
     public static CityTable readFromFile(String fileName) {
@@ -133,7 +78,7 @@ public class CityTable {
             System.exit(0);
         }
 
-        while(infile.hasNextLine()) {
+        while (infile.hasNextLine()) {
             String line = infile.nextLine();
             String cityAndState;
             StringTokenizer tokenizer = new StringTokenizer(line);
@@ -156,8 +101,7 @@ public class CityTable {
 
 
             // hashing object City
-            Hash24 h1 = new Hash24();
-            int primaryIndex = h1.hash(cityAndState) % tsize;
+            primaryIndex = h1.hash(cityAndState) % 16000;
 
             // if collision, i.e. the same hash
             if (primaryTable[primaryIndex] != null) {
@@ -174,50 +118,123 @@ public class CityTable {
                 primaryTable[primaryIndex] = newSecondTable;
             }
             ++numberOfCities;
-
-//            int primaryIndex = hashing.hash(cityAndState) % tsize;
-//            if (primaryCityHash[primaryIndex] != null) {  // if the hash already exist (meaning collision I think)
-//
-//                primaryCityHash[primaryIndex].add(new City(cityAndState, latitude, longitude));
-//                numbersOfCollisions[primaryIndex]++;  // number of collision at that hash
-//                ++numberOfCities;
-//
-//            } else {  // if the hash is new
-//                secondaryCityHash = new ArrayList<City>();
-//                primaryCityHash[primaryIndex] = secondaryCityHash;
-//                primaryCityHash[primaryIndex].add(new City(cityAndState, latitude, longitude));
-//                ++numberOfCities;
-//            }
         }
 
         infile.close();
         return new CityTable();
     }
 
-    /**
-     * write to file
-     * @param fName
-     */
-    public void writeToFile(String fName) {
-
+    // getters
+    public String getFname() {
+        return fname;
     }
 
-
-    /**
-     * search perfect hash table
-     * @param x
-     * @return
-     */
-    public boolean find(String x) {
-
-        return false;
+    // setters
+    public void setFname(String fname) {
+        this.fname = fname;
     }
 
-    public static void resizeArrayList(ArrayList<City> arrayCity, int size) {
-        arrayCity.ensureCapacity(size);
-        for (int i = 0; i < size; ++i) {
-            arrayCity.add(null);
+    public int getTsize() {
+        return tsize;
+    }
+
+    public void setTsize(int tsize) {
+        CityTable.tsize = tsize;
+    }
+
+    /**
+     * the dump thing
+     */
+    public void dump() {
+        // checking collision
+        int[] numsCollsions = new int[15];
+
+        int max = 0;
+        int maxIndex = 0;
+        for (int i = 0; i < 16000; ++i) {
+
+            // no cities
+            if (primaryTable[i] == null) {
+                numsCollsions[0]++;
+                continue;
+            }
+
+            // max
+            int numbersOfCollision = primaryTable[i].getNormalCityStorage().size();
+            if (primaryTable[i].getNormalCityStorage().size() > max) {
+                max = primaryTable[i].getNormalCityStorage().size();
+                maxIndex = i;
+            }
+
+            for (int j = 1; j < 15; ++j) {
+                if (numbersOfCollision == j) {
+                    numsCollsions[j]++;
+                }
+            }
+        }
+
+        System.out.println("--------------DUMP FILE--------------");
+        System.out.println("table size: " + tsize);
+        System.out.println("Number of cities: " + numberOfCities);
+        System.out.println("Max numbers of collision: " + max);
+
+        for (int i = 0; i < 15; ++i) {
+            System.out.println(i + " Collisions: " + numsCollsions[i]);
+        }
+
+        System.out.println("");
+        System.out.println("--------------Cities in hash with most collisions--------------");
+        System.out.println(primaryTable[maxIndex].getNormalCityStorage());
+
+        System.out.println("");
+        System.out.println("--------------Second Table numbers of rehash required--------------");
+        for (int i = 1; i < 19; ++i) {
+            System.out.println("number of secondary hash tables trying " + i + " hash functions = " + secondTableCollisions[i]);
         }
     }
 
+    /**
+     * number of city read in
+     *
+     * @return
+     */
+    public int numCities() {
+        return numberOfCities;
+    }
+
+    /**
+     * write to file
+     *
+     * @param fName
+     */
+    public void writeToFile(String fName) {
+        // basic opening file
+        FileOutputStream outfile = null;
+        try {
+            outfile = new FileOutputStream("US_Cities_LL.ser");
+            ObjectOutputStream out = new ObjectOutputStream(outfile);
+            out.writeObject(primaryTable);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+
+    }
+
+    public City find(String cName) {
+        primaryIndex = h1.hash(cName) % 16000;
+        for (int i = 0; i < primaryTable[primaryIndex].secondTableSize; ++i) {
+            if (primaryTable[primaryIndex] == null) {return null; }
+            if (primaryTable[primaryIndex].getSecondTable()[i] == null) {continue; }
+
+            // primaryTable[] -> secondaryTable[] -> City -> name  == cName
+            if (Objects.equals(primaryTable[primaryIndex].getSecondTable()[i].name, cName)) {
+                System.out.println("Found: " + primaryTable[primaryIndex].getSecondTable()[i].name);
+                return primaryTable[primaryIndex].getSecondTable()[i];
+            }
+        }
+
+        System.out.println("Did not Find: " + cName);
+        return null;
+    }
 }

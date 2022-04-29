@@ -1,29 +1,29 @@
 package hash341;
 
 
-public class City {
-    protected  String cityAndState;
-    protected  float latitude;
-    protected  float longitude;
+import java.io.Serializable;
 
-    public City(String cityAndState, float latitude, float longitude) {
-        this.cityAndState = cityAndState;
+public class City implements Serializable {
+    public  String name;
+    public  float latitude;
+    public  float longitude;
+
+    public City(String name, float latitude, float longitude) {
+        this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
-    public void setCityAndState(String city) {
-        cityAndState = city;
-    }
-    public void setLatitude(float lat) {latitude = lat;}
-    public void setLongitude(float longit) {
-        longitude = longit;
+    public City() {
+        this.name = "NONE";
+        this.latitude = -1f;
+        this.longitude = -1f;
     }
 
     @Override
     public String toString() {
         return "City{" +
-                "cityAndState = '" + cityAndState + '\'' +
+                "cityAndState = '" + name + '\'' +
                 ", latitude = " + latitude + ", longitude = " + longitude + '}' + "\n";
     }
 }
