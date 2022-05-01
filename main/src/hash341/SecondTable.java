@@ -2,6 +2,7 @@ package hash341;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class SecondTable implements Serializable {
 
@@ -55,7 +56,7 @@ public class SecondTable implements Serializable {
 
         for (int hashValue = 0; hashValue < collisionStorage.size() - 1; ++hashValue) {
             for (int j = hashValue + 1; j < collisionStorage.size(); ++j) {
-                if (collisionStorage.get(hashValue) == collisionStorage.get(j)) {
+                if (Objects.equals(collisionStorage.get(hashValue), collisionStorage.get(j))) {
                     collisionStorage.clear();  // reset
                     return false;
                 }
