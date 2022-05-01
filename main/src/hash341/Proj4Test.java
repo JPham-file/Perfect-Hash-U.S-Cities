@@ -28,8 +28,7 @@ public class Proj4Test {
         hash341.CityTable US_Cities ;
         String cName ;
 
-//        US_Cities = hash341.CityTable.readFromFile("US_Cities_LL.ser") ;
-        US_Cities = new CityTable("US_Cities_LL.txt", 16000);
+        US_Cities = hash341.CityTable.readFromFile("US_Cities_LL.ser") ;
 
         cName = "Arbutus, MD" ;
         System.out.println("\nSearching for " + cName) ;
@@ -45,7 +44,7 @@ public class Proj4Test {
 
         cName = "Amherst, MA" ;
         System.out.println("\nSearching for " + cName) ;
-        printCity( US_Cities.find(cName) ) ;
+        printCity(US_Cities.find(cName)) ;
 
         cName = "North Amherst, MA" ;
         System.out.println("\nSearching for " + cName) ;
@@ -77,7 +76,7 @@ public class Proj4Test {
 
         cName = "Neverland, TX" ;
         System.out.println("\nSearching for " + cName) ;
-        printCity( US_Cities.find(cName) ) ;
+        printCity(US_Cities.find(cName)) ;
 
         cName = "Anytown, USA" ;
         System.out.println("\nSearching for " + cName) ;

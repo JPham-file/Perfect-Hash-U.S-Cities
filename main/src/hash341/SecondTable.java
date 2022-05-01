@@ -15,10 +15,6 @@ public class SecondTable implements Serializable {
         return secondTable;
     }
 
-    public City getSecondTableIndex(int i) {
-        return secondTable[i];
-    }
-
     private int collisionCounter = 0;
 
     public int getCollisionCounter() {
@@ -97,14 +93,10 @@ public class SecondTable implements Serializable {
 
         secondTable = new City[secondTableSize];
         for (int i = 0; i < collisionStorage.size(); ++i) {
-            // just printing out for debugging
-//            System.out.println("second hash: " + collisionStorage.get(i));
 
             // now properly storing it
             secondTable[collisionStorage.get(i)] = normalCityStorage.get(i);
-//            System.out.println(secondTable[collisionStorage.get(i)]);
         }
         collisionStorage.clear();  // reset
-//        System.out.println("--------------");
     }
 }

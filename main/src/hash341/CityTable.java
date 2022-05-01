@@ -9,38 +9,35 @@ import java.io.*;
  * tsize = primary hash table size
  */
 public class CityTable implements Serializable {
-    private static  SecondTable[] primaryTable = new SecondTable[16000];
-    private static  int[] secondTableCollisions = new int[16000]; // keep track of collision in second table
-    private static int tsize;
-    private static int numberOfCities;
+    private int tsize;
+    private  SecondTable[] primaryTable;
+    private  int[] secondTableCollisions; // keep track of collision in second table
+    private  int numberOfCities;
     private String fname;
-    static Hash24 h1 = new Hash24();
+    private Hash24 h1;
     static int primaryIndex;
-
-
-    public static SecondTable[] getPrimaryTable() {
-        return primaryTable;
-    }
 
     // constructor
     public CityTable(String fname, int tsize) {
         this.fname = fname;
         this.tsize = tsize;
+        primaryTable = new SecondTable[tsize];
+        secondTableCollisions = new int[tsize];
+        h1 = new Hash24();
 
         // create all City object and store City object into Object SecondTable which is stored in array of primaryTable
-        readFromFile(this.fname);
+        readNormalFile(this.fname);
 
         // now hash for second table
-        for (int i = 0; i < 16000; ++i) {
+        for (int i = 0; i < tsize; ++i) {
             if (primaryTable[i] == null) {
                 continue;
             }
             primaryTable[i].hashSecondTable();
         }
-        writeToFile(this.fname);
 
         // storing second hash number of hashes required
-        for (int i = 0; i < 16000; ++i) {
+        for (int i = 0; i < tsize; ++i) {
             if (primaryTable[i] == null) {
                 continue;
             }
@@ -51,12 +48,15 @@ public class CityTable implements Serializable {
                 }
             }
         }
+        h1.dump();
         dump();
+        writeToFile("US_Cities_LL.ser");
     }
 
-    public CityTable() {
-        this.fname = "";
-        this.tsize = 16000;
+    public CityTable() {}
+
+    public void setTsize(int tsize) {
+        this.tsize = tsize;
     }
 
     /**
@@ -66,7 +66,7 @@ public class CityTable implements Serializable {
      *
      * @param fileName
      */
-    public static CityTable readFromFile(String fileName) {
+    public void readNormalFile(String fileName) {
 
         // basic opening file
         Scanner infile = null;
@@ -101,7 +101,7 @@ public class CityTable implements Serializable {
 
 
             // hashing object City
-            primaryIndex = h1.hash(cityAndState) % 16000;
+            primaryIndex = h1.hash(cityAndState) % tsize;
 
             // if collision, i.e. the same hash
             if (primaryTable[primaryIndex] != null) {
@@ -121,26 +121,9 @@ public class CityTable implements Serializable {
         }
 
         infile.close();
-        return new CityTable();
+
     }
 
-    // getters
-    public String getFname() {
-        return fname;
-    }
-
-    // setters
-    public void setFname(String fname) {
-        this.fname = fname;
-    }
-
-    public int getTsize() {
-        return tsize;
-    }
-
-    public void setTsize(int tsize) {
-        CityTable.tsize = tsize;
-    }
 
     /**
      * the dump thing
@@ -202,6 +185,45 @@ public class CityTable implements Serializable {
         return numberOfCities;
     }
 
+    public void setFname(String fname) {
+        this.fname = fname;
+    }
+
+    public void setH1(Hash24 h1) {
+        this.h1 = h1;
+    }
+
+    public void setPrimaryTable(SecondTable[] primaryTable) {
+        this.primaryTable = primaryTable;
+    }
+
+    public static void setPrimaryIndex(int primaryIndex) {
+        CityTable.primaryIndex = primaryIndex;
+    }
+
+    public static CityTable readFromFile(String fileName) {
+        FileInputStream inputFile = null;
+        CityTable table = new CityTable();
+        try {
+            inputFile = new FileInputStream(fileName);
+            ObjectInputStream inputStream = new ObjectInputStream(inputFile);
+
+            table.setTsize((Integer) inputStream.readObject());
+            table.setH1((Hash24) inputStream.readObject());
+            table.setPrimaryTable((SecondTable[]) inputStream.readObject());
+
+
+            inputFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return table;
+    }
+
     /**
      * write to file
      *
@@ -210,10 +232,17 @@ public class CityTable implements Serializable {
     public void writeToFile(String fName) {
         // basic opening file
         FileOutputStream outfile = null;
+        String testing1 = "yoyoyoyo";
         try {
-            outfile = new FileOutputStream("US_Cities_LL.ser");
+            outfile = new FileOutputStream(fName);
             ObjectOutputStream out = new ObjectOutputStream(outfile);
+
+            out.writeObject(tsize);
+            out.writeObject(h1);
             out.writeObject(primaryTable);
+
+
+            out.close();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
@@ -222,19 +251,17 @@ public class CityTable implements Serializable {
     }
 
     public City find(String cName) {
-        primaryIndex = h1.hash(cName) % 16000;
+        primaryIndex = h1.hash(cName) % tsize;
+        if (primaryTable[primaryIndex] == null) {return null; }
+
         for (int i = 0; i < primaryTable[primaryIndex].secondTableSize; ++i) {
-            if (primaryTable[primaryIndex] == null) {return null; }
             if (primaryTable[primaryIndex].getSecondTable()[i] == null) {continue; }
 
             // primaryTable[] -> secondaryTable[] -> City -> name  == cName
             if (Objects.equals(primaryTable[primaryIndex].getSecondTable()[i].name, cName)) {
-                System.out.println("Found: " + primaryTable[primaryIndex].getSecondTable()[i].name);
                 return primaryTable[primaryIndex].getSecondTable()[i];
             }
         }
-
-        System.out.println("Did not Find: " + cName);
         return null;
     }
 }
